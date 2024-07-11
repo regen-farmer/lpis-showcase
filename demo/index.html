@@ -30,20 +30,18 @@
 </style>
 
 <div id="map"></div>
-<pre id="coordinates" class="coordinates"></pre>
 
 <script>
-    const coordinates = document.getElementById('coordinates');
     const map = new maplibregl.Map({
       hash: true,
         
         container: 'map',
         style:
             'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
-        center: [6.55, 56.204],
+        center: [11.259, 56],
         
         
-        zoom: 11
+        zoom: 7
     });
 
     map.on("load", ()=>{
@@ -76,18 +74,7 @@
     });
   })
 
-    const marker = new maplibregl.Marker({draggable: true})
-        .setLngLat([0, 0])
-        .addTo(map);
 
-    function onDragEnd() {
-        const lngLat = marker.getLngLat();
-        coordinates.style.display = 'block';
-        coordinates.innerHTML =
-            `Longitude: ${lngLat.lng}<br />Latitude: ${lngLat.lat}`;
-    }
-
-    marker.on('dragend', onDragEnd);
 </script>
 </body>
 </html>
