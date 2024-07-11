@@ -9,7 +9,7 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script> -->
 
     <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
     <style>
@@ -53,46 +53,51 @@
 
         container: "map",
         style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-        center: [11.259, 56],
+        center: [15.55, 56.37],
 
-        zoom: 4.64,
+        zoom: 3.51,
       });
 
       map.on("load", () => {
         let tilesets = [
           "DK_Marker_2023",
+          "FI_AgriculturalParcel_2023",
           "NL_brpgewaspercelen_definitief_2022",
         ];
 
         for (const tileset of tilesets) {
-          
-
           map.addSource(`${tileset}_source`, {
             type: "vector",
             url: `https://martin-lpis.onrender.com/${tileset}`,
             // url: `http://localhost:3000/${tileset}`,
           });
 
-          map.addLayer({
-            id: `${tileset}_fieldfill`,
-            type: "fill",
-            source: `${tileset}_source`,
-            "source-layer": "fields",
-            paint: {
-              "fill-color": "rgba(127,34,192,0.6)",
+          map.addLayer(
+            {
+              id: `${tileset}_fieldfill`,
+              type: "fill",
+              source: `${tileset}_source`,
+              "source-layer": "fields",
+              paint: {
+                "fill-color": "rgba(127,34,192,0.6)",
+              },
             },
-          });
+            "waterway_label"
+          );
 
-          map.addLayer({
-            id: `${tileset}_fieldline`,
-            type: "line",
-            source: `${tileset}_source`,
-            "source-layer": "fields",
-            paint: {
-              "line-color": "black",
-              "line-width": 1,
+          map.addLayer(
+            {
+              id: `${tileset}_fieldline`,
+              type: "line",
+              source: `${tileset}_source`,
+              "source-layer": "fields",
+              paint: {
+                "line-color": "black",
+                "line-width": 1,
+              },
             },
-          });
+            "waterway_label"
+          );
 
           // Create a popup, but don't add it to the map yet.
           const popup = new maplibregl.Popup({
@@ -106,14 +111,13 @@
 
             var coordinates = e.lngLat;
 
-
-            let tooltipHTML = '';
-            for (const [key, value] of Object.entries(e.features[0].properties)) {
-                tooltipHTML += `${key}: ${value}<br/>`
-                
+            let tooltipHTML = "";
+            for (const [key, value] of Object.entries(
+              e.features[0].properties
+            )) {
+              tooltipHTML += `${key}: ${value}<br/>`;
             }
 
-            
             // Ensure that if the map is zoomed out such that multiple
             // copies of the feature are visible, the popup appears
             // over the copy being pointed to.
