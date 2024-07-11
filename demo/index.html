@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <title>Create a draggable Marker</title>
-    <meta property="og:description"  />
-    <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css' />
-    <script src='https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js'></script>
+    <meta property="og:description" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css"
+    />
+    <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body,
+      #map {
+        height: 100%;
+      }
     </style>
-</head>
-<body>
-<style>
-    .coordinates {
+  </head>
+  <body>
+    <style>
+      .coordinates {
         background: rgba(0, 0, 0, 0.5);
         color: #fff;
         position: absolute;
@@ -26,55 +36,88 @@
         line-height: 18px;
         border-radius: 3px;
         display: none;
-    }
-</style>
+      }
+    </style>
 
-<div id="map"></div>
+    <div id="map"></div>
 
-<script>
-    const map = new maplibregl.Map({
-      hash: true,
-        
-        container: 'map',
-        style:
-            'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+    <script>
+      const map = new maplibregl.Map({
+        hash: true,
+
+        container: "map",
+        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
         center: [11.259, 56],
-        
-        
-        zoom: 7
-    });
 
-    map.on("load", ()=>{
-
-      map.addSource('fields', {
-          'type': 'vector',
-          'url': 'https://martin-lpis.onrender.com/DK_Marker_2023'
+        zoom: 7,
       });
-      
-      map.addLayer({
-        id: 'fieldfill',
-        type: 'fill',
-        'source': 'fields',
-        'source-layer': 'zcta',
-        paint: {
-            'fill-color': 'rgba(127,34,192,0.6)'
-        },
-    });
 
-      
-      map.addLayer({
-        id: 'fieldline',
-        type: 'line',
-        'source': 'fields',
-        'source-layer': 'zcta',
-        paint: {
-          "line-color": "black",
-				  "line-width": 1,
-        },
-    });
-  })
+      map.on("load", () => {
+        map.addSource("fields", {
+          type: "vector",
+          url: "https://martin-lpis.onrender.com/DK_Marker_2023",
+        });
 
+        map.addLayer({
+          id: "fieldfill",
+          type: "fill",
+          source: "fields",
+          "source-layer": "zcta",
+          paint: {
+            "fill-color": "rgba(127,34,192,0.6)",
+          },
+        });
 
-</script>
-</body>
+        map.addLayer({
+          id: "fieldline",
+          type: "line",
+          source: "fields",
+          "source-layer": "zcta",
+          paint: {
+            "line-color": "black",
+            "line-width": 1,
+          },
+        });
+
+        // Create a popup, but don't add it to the map yet.
+        const popup = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+        });
+
+        map.on("mousemove", "fieldfill", (e) => {
+          // console.log(e.features[0].properties)
+          // Change the cursor style as a UI indicator.
+          map.getCanvas().style.cursor = "pointer";
+
+          const coordinates = e.features[0].geometry.coordinates[0][0].slice();
+          const description = JSON.stringify(
+            e.features[0].properties,
+            null,
+            "\t"
+          )
+            .replaceAll("{", "")
+            .replaceAll("}", "")
+            .replaceAll("\"", "")
+            .replaceAll(",", ",<br/>");
+
+          // Ensure that if the map is zoomed out such that multiple
+          // copies of the feature are visible, the popup appears
+          // over the copy being pointed to.
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          // Populate the popup and set its coordinates
+          // based on the feature found.
+          popup.setLngLat(coordinates).setHTML(description).addTo(map);
+        });
+
+        map.on("mouseleave", "fieldfill", () => {
+          map.getCanvas().style.cursor = "";
+          popup.remove();
+        });
+      });
+    </script>
+  </body>
 </html>
