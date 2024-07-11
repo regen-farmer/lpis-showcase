@@ -106,16 +106,14 @@
 
             var coordinates = e.lngLat;
 
-            const description = JSON.stringify(
-              e.features[0].properties,
-              null,
-              "\t"
-            )
-              .replaceAll("{", "")
-              .replaceAll("}", "")
-              .replaceAll('"', "")
-              .replaceAll(",", ",<br/>");
 
+            let tooltipHTML = '';
+            for (const [key, value] of Object.entries(e.features[0].properties)) {
+                tooltipHTML += `${key}: ${value}<br/>`
+                
+            }
+
+            
             // Ensure that if the map is zoomed out such that multiple
             // copies of the feature are visible, the popup appears
             // over the copy being pointed to.
@@ -125,7 +123,7 @@
 
             // Populate the popup and set its coordinates
             // based on the feature found.
-            popup.setLngLat(coordinates).setHTML(description).addTo(map);
+            popup.setLngLat(coordinates).setHTML(tooltipHTML).addTo(map);
           });
 
           map.on("mouseleave", `${tileset}_fieldfill`, () => {
