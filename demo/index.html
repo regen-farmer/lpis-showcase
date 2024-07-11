@@ -9,6 +9,8 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+
     <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
     <style>
       body {
@@ -19,6 +21,10 @@
       body,
       #map {
         height: 100%;
+      }
+
+      .maplibregl-popup-content {
+        pointer-events: none !important;
       }
     </style>
   </head>
@@ -86,11 +92,12 @@
         });
 
         map.on("mousemove", "fieldfill", (e) => {
-          // console.log(e.features[0].properties)
-          // Change the cursor style as a UI indicator.
-          map.getCanvas().style.cursor = "pointer";
+          
+            // Change the cursor style as a UI indicator.
+          map.getCanvas().style.cursor = "help";
 
-          const coordinates = e.features[0].geometry.coordinates[0][0].slice();
+          var coordinates = e.lngLat;
+        
           const description = JSON.stringify(
             e.features[0].properties,
             null,
@@ -98,7 +105,7 @@
           )
             .replaceAll("{", "")
             .replaceAll("}", "")
-            .replaceAll("\"", "")
+            .replaceAll('"', "")
             .replaceAll(",", ",<br/>");
 
           // Ensure that if the map is zoomed out such that multiple
