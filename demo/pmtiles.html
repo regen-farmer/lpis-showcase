@@ -37,7 +37,8 @@
 <script>
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol('pmtiles', protocol.tile);
-    const PMTILES_URL = 'https://lpis-data.s3.eu-north-1.amazonaws.com/LPIS/DK_Marker_2023.pmtiles';
+    // const PMTILES_URL = 'https://lpis-data.s3.eu-north-1.amazonaws.com/LPIS/DK_Marker_2023.pmtiles';
+    const PMTILES_URL = 'https://lpis-data.s3.eu-north-1.amazonaws.com/LPIS/NL_brpgewaspercelen_definitief_2022.pmtiles';
     const p = new pmtiles.PMTiles(PMTILES_URL);
     protocol.add(p);
 
@@ -65,7 +66,7 @@
         id: 'fieldfill',
         type: 'fill',
         'source': 'fields',
-        'source-layer': 'zcta',
+        'source-layer': 'fields',
         paint: {
             'fill-color': 'rgba(127,34,192,0.6)'
         },
@@ -76,7 +77,7 @@
         id: 'fieldline',
         type: 'line',
         'source': 'fields',
-        'source-layer': 'zcta',
+        'source-layer': 'fields',
         paint: {
           "line-color": "black",
 				  "line-width": 1,

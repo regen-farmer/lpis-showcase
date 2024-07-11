@@ -59,71 +59,80 @@
       });
 
       map.on("load", () => {
-        map.addSource("fields", {
-          type: "vector",
-          url: "https://martin-lpis.onrender.com/DK_Marker_2023",
-        });
+        let tilesets = [
+          "DK_Marker_2023",
+          "NL_brpgewaspercelen_definitief_2022",
+        ];
 
-        map.addLayer({
-          id: "fieldfill",
-          type: "fill",
-          source: "fields",
-          "source-layer": "zcta",
-          paint: {
-            "fill-color": "rgba(127,34,192,0.6)",
-          },
-        });
+        for (const tileset of tilesets) {
+          console.log("countries.key", tileset);
 
-        map.addLayer({
-          id: "fieldline",
-          type: "line",
-          source: "fields",
-          "source-layer": "zcta",
-          paint: {
-            "line-color": "black",
-            "line-width": 1,
-          },
-        });
+          map.addSource(`${tileset}_source`, {
+            type: "vector",
+            url: `https://martin-lpis.onrender.com/${tileset}`,
+            // url: `http://localhost:3000/${tileset}`,
+          });
 
-        // Create a popup, but don't add it to the map yet.
-        const popup = new maplibregl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-        });
+          map.addLayer({
+            id: `${tileset}_fieldfill`,
+            type: "fill",
+            source: `${tileset}_source`,
+            "source-layer": "fields",
+            paint: {
+              "fill-color": "rgba(127,34,192,0.6)",
+            },
+          });
 
-        map.on("mousemove", "fieldfill", (e) => {
-          
+          map.addLayer({
+            id: `${tileset}_fieldline`,
+            type: "line",
+            source: `${tileset}_source`,
+            "source-layer": "fields",
+            paint: {
+              "line-color": "black",
+              "line-width": 1,
+            },
+          });
+
+          // Create a popup, but don't add it to the map yet.
+          const popup = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+          });
+
+          map.on("mousemove", `${tileset}_fieldfill`, (e) => {
             // Change the cursor style as a UI indicator.
-          map.getCanvas().style.cursor = "help";
+            map.getCanvas().style.cursor = "help";
 
-          var coordinates = e.lngLat;
-        
-          const description = JSON.stringify(
-            e.features[0].properties,
-            null,
-            "\t"
-          )
-            .replaceAll("{", "")
-            .replaceAll("}", "")
-            .replaceAll('"', "")
-            .replaceAll(",", ",<br/>");
+            var coordinates = e.lngLat;
 
-          // Ensure that if the map is zoomed out such that multiple
-          // copies of the feature are visible, the popup appears
-          // over the copy being pointed to.
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-          }
+            const description = JSON.stringify(
+              e.features[0].properties,
+              null,
+              "\t"
+            )
+              .replaceAll("{", "")
+              .replaceAll("}", "")
+              .replaceAll('"', "")
+              .replaceAll(",", ",<br/>");
 
-          // Populate the popup and set its coordinates
-          // based on the feature found.
-          popup.setLngLat(coordinates).setHTML(description).addTo(map);
-        });
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
 
-        map.on("mouseleave", "fieldfill", () => {
-          map.getCanvas().style.cursor = "";
-          popup.remove();
-        });
+            // Populate the popup and set its coordinates
+            // based on the feature found.
+            popup.setLngLat(coordinates).setHTML(description).addTo(map);
+          });
+
+          map.on("mouseleave", `${tileset}_fieldfill`, () => {
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+          });
+        }
       });
     </script>
   </body>
