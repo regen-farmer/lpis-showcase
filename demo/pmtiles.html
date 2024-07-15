@@ -22,6 +22,18 @@
       #map {
         height: 100%;
       }
+
+
+      .maplibregl-popup-content {
+        pointer-events: none !important;
+      }
+
+      .maplibregl-popup, .maplibregl-popup-anchor-top {
+        max-width: none !important;
+        word-wrap: none !important;
+        white-space: nowrap !important;
+        overflow: scroll;
+      }
     </style>
   </head>
   <body>
