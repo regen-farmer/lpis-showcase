@@ -12,7 +12,11 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script> -->
 
     <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
-    
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.min.js"></script>
+  <link
+      rel="stylesheet"
+      href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.css"
+  />
 
 
     <style>
@@ -56,8 +60,8 @@
     </style>
 
     
-  <a href="https://regenfarmer.com">
-      <div style="display: flex; width: 100vw; align-items: center; justify-content: flex-start; position: absolute; z-index: 20; margin: 10px; color: black; font-family:Arial, Helvetica, sans-serif;">
+  <a href="https://regenfarmer.com" >
+      <div style="display: flex;  align-items: center; justify-content: flex-start; position: absolute; z-index: 20; margin: 10px; color: black; font-family:Arial, Helvetica, sans-serif;">
         <div style="display: flex; align-items: center; border: 1px solid #888; justify-content: flex-end;  background-color: white; padding: 10px; gap: 10px; border-radius: 20px; margin: 10px;">
             <img src="./icon.png" alt="Logo" width="20" height="20" class="d-inline-block align-text-top"> Powered by Regen Farmer        
         </div>
@@ -67,6 +71,8 @@
     <div id="map"></div>
 
     <script>
+
+      
       const map = new maplibregl.Map({
         hash: true,
 
@@ -76,6 +82,52 @@
 
         zoom: 3.51,
       });
+
+      const geocoderApi = {
+        forwardGeocode: async (config) => {
+            const features = [];
+            try {
+                const request =
+            `https://nominatim.openstreetmap.org/search?q=${
+                config.query
+            }&format=geojson&polygon_geojson=1&addressdetails=1`;
+                const response = await fetch(request);
+                const geojson = await response.json();
+                for (const feature of geojson.features) {
+                    const center = [
+                        feature.bbox[0] +
+                    (feature.bbox[2] - feature.bbox[0]) / 2,
+                        feature.bbox[1] +
+                    (feature.bbox[3] - feature.bbox[1]) / 2
+                    ];
+                    const point = {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: center
+                        },
+                        place_name: feature.properties.display_name,
+                        properties: feature.properties,
+                        text: feature.properties.display_name,
+                        place_type: ['place'],
+                        center
+                    };
+                    features.push(point);
+                }
+            } catch (e) {
+                console.error(`Failed to forwardGeocode with error: ${e}`);
+            }
+
+            return {
+                features
+            };
+        }
+    };
+    map.addControl(
+        new MaplibreGeocoder(geocoderApi, {
+            maplibregl
+        })
+    );
 
       map.on("load", () => {
         let tilesets = [
