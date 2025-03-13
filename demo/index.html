@@ -7,15 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css"
+      href="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.css"
     />
     <!-- <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script> -->
 
-    <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.7.0/dist/maplibre-gl-geocoder.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.js"></script>
   <link
       rel="stylesheet"
-      href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.7.0/dist/maplibre-gl-geocoder.css"
+      href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.css"
   />
 
 
@@ -23,6 +23,7 @@
       body {
         margin: 0;
         padding: 0;
+        background-color: #201c2b;
       }
       html,
       body,
@@ -70,17 +71,24 @@
 
     <div id="map"></div>
 
-    <script>
+    <script type="module">
 
+
+      const data = await fetch('https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json')
+        .then(response => response.json());
+
+        data.projection = {'type': 'globe'}
+
+        console.log(data)
+        
       
       const map = new maplibregl.Map({
         hash: true,
 
         container: "map",
-        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-        center: [15.55, 56.37],
-
-        zoom: 3.51,
+        style: data,
+        center: [7.82, 48.43],
+        zoom: 3.56,
       });
 
       const geocoderApi = {
