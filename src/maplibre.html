@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MapLibre GL JS - RegenMaps</title>
+    <meta property="og:description" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.css"
+    />
+    <script src="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #201c2b;
+      }
+      html,
+      body,
+      #map {
+        height: 100vh;
+      }
+      .maplibregl-popup-content {
+        pointer-events: none !important;
+      }
+      .maplibregl-popup, .maplibregl-popup-anchor-top {
+        max-width: none !important;
+        word-wrap: none !important;
+        white-space: nowrap !important;
+        overflow: scroll;
+      }
+          </style>
+  </head>
+  <body>
+    <div style="position: absolute; z-index: 20; margin: 10px; font-family: Arial, Helvetica, sans-serif;">
+      <a href="https://regenfarmer.com" style="text-decoration: none; color: black;">
+        <div style="display: flex; align-items: center; border: 1px solid #888; background-color: white; padding: 10px; gap: 10px; border-radius: 20px; margin-bottom: 10px;">
+          <img src="./icon.png" alt="Logo" width="20" height="20"> Powered by Regen Farmer
+        </div>
+      </a>
+      <a href="./" style="text-decoration: none; color: #333;">
+        <div style="display: flex; align-items: center; border: 1px solid #888; background-color: white; padding: 10px; gap: 10px; border-radius: 20px; font-size: 14px;">
+          ← Back to Examples
+        </div>
+      </a>
+    </div>
+
+    <div id="map"></div>
+
+    <script type="module">
+      const data = await fetch('https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json')
+        .then(response => response.json());
+
+      data.projection = {'type': 'globe'}
+
+      const map = new maplibregl.Map({
+        hash: true,
+        container: "map",
+        style: data,
+        center: [7.82, 48.43],
+        zoom: 3.56,
+      });
+
+      const geocoderApi = {
+        forwardGeocode: async (config) => {
+          const features = [];
+          try {
+            const request = `https://nominatim.openstreetmap.org/search?q=${config.query}&format=geojson&polygon_geojson=1&addressdetails=1`;
+            const response = await fetch(request);
+            const geojson = await response.json();
+            for (const feature of geojson.features) {
+              const center = [
+                feature.bbox[0] + (feature.bbox[2] - feature.bbox[0]) / 2,
+                feature.bbox[1] + (feature.bbox[3] - feature.bbox[1]) / 2
+              ];
+              const point = {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: center
+                },
+                place_name: feature.properties.display_name,
+                properties: feature.properties,
+                text: feature.properties.display_name,
+                place_type: ['place'],
+                center
+              };
+              features.push(point);
+            }
+          } catch (e) {
+            console.error(`Failed to forwardGeocode with error: ${e}`);
+          }
+          return { features };
+        }
+      };
+
+      map.addControl(
+        new MaplibreGeocoder(geocoderApi, {
+          maplibregl,
+          marker: false
+        })
+      );
+
+      map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+      map.on("load", () => {
+        let tilesets = [
+          "AT_INSPIRE_FELDSTUECKE_2019_POLYGON",
+          "DK_Marker_2023",
+          "FI_AgriculturalParcel_2023",
+          "FR_PARCELLES_GRAPHIQUES_2022",
+          "NL_brpgewaspercelen_definitief_2022",
+          "CZ_2024_DPB",
+          "DE_Brandenburg_2025",
+          "DE_Niedersachen_2024",
+          "IE_Parcels_2023",
+          "PT_Solo_2022",
+          "BE_Vlaanderen_2022"
+        ];
+
+        for (const tileset of tilesets) {
+          map.addSource(`${tileset}_source`, {
+            type: "vector",
+            url: `https://maps.regenfarmer.com/api/tilesets/${tileset}`,
+          });
+
+          map.addLayer(
+            {
+              id: `${tileset}_fieldfill`,
+              type: "fill",
+              source: `${tileset}_source`,
+              "source-layer": "fields",
+              paint: {
+                "fill-color": "rgba(127,34,192,0.6)",
+              },
+            },
+            "waterway_label"
+          );
+
+          map.addLayer(
+            {
+              id: `${tileset}_fieldline`,
+              type: "line",
+              source: `${tileset}_source`,
+              "source-layer": "fields",
+              paint: {
+                "line-color": "black",
+                "line-width": 1,
+              },
+            },
+            "waterway_label"
+          );
+
+          const popup = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+          });
+
+          map.on("mousemove", `${tileset}_fieldfill`, (e) => {
+            map.getCanvas().style.cursor = "help";
+            var coordinates = e.lngLat;
+
+            let tooltipHTML = "";
+            for (const [key, value] of Object.entries(e.features[0].properties)) {
+              tooltipHTML += `${key}: ${value}<br/>`;
+            }
+
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            popup.setLngLat(coordinates).setHTML(tooltipHTML).addTo(map);
+          });
+
+          map.on("mouseleave", `${tileset}_fieldfill`, () => {
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

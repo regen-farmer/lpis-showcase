@@ -1,228 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>RegenMaps</title>
-    <meta property="og:description" />
+    <title>RegenMaps - LPIS Data Showcase</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.css"
-    />
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script> -->
-
-    <script src="https://unpkg.com/maplibre-gl@^5.0.0/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.js"></script>
-  <link
-      rel="stylesheet"
-      href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.8.0/dist/maplibre-gl-geocoder.css"
-  />
-
-
     <style>
-      body {
+      * {
         margin: 0;
         padding: 0;
-        background-color: #201c2b;
+        box-sizing: border-box;
       }
-      html,
-      body,
-      #map {
-        height: 100vh;
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        color: #fff;
       }
-
-      .maplibregl-popup-content {
-        pointer-events: none !important;
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
       }
-
-      .maplibregl-popup, .maplibregl-popup-anchor-top {
-        max-width: none !important;
-        word-wrap: none !important;
-        white-space: nowrap !important;
-        overflow: scroll;
+      header {
+        text-align: center;
+        margin-bottom: 60px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .logo img {
+        width: 50px;
+        height: 50px;
+      }
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        font-size: 1.2rem;
+        color: #a0a0a0;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 60px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 30px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(127, 34, 192, 0.5);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      .card-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+      .card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+      }
+      .card p {
+        color: #a0a0a0;
+        line-height: 1.6;
+      }
+      .card .tech {
+        display: inline-block;
+        background: rgba(127, 34, 192, 0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-top: 15px;
+        color: #c084fc;
+      }
+      .info-section {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 40px;
+      }
+      .info-section h3 {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+        color: #c084fc;
+      }
+      .info-section p {
+        color: #a0a0a0;
+        line-height: 1.8;
+        margin-bottom: 15px;
+      }
+      .countries {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .country {
+        background: rgba(127, 34, 192, 0.2);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+      }
+      footer {
+        text-align: center;
+        padding: 30px;
+        color: #666;
+      }
+      footer a {
+        color: #c084fc;
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
-    <style>
-      .coordinates {
-        background: rgba(0, 0, 0, 0.5);
-        color: #fff;
-        position: absolute;
-        bottom: 40px;
-        left: 10px;
-        padding: 5px 10px;
-        margin: 0;
-        font-size: 11px;
-        line-height: 18px;
-        border-radius: 3px;
-        display: none;
-      }
-    </style>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <img src="./icon.png" alt="RegenMaps Logo" />
+          <h1>RegenMaps</h1>
+        </div>
+        <p class="subtitle">
+          Explore European agricultural parcel data (LPIS) with different mapping libraries.
+          Choose your preferred technology below.
+        </p>
+      </header>
 
-    
-  <a href="https://regenfarmer.com" >
-      <div style="display: flex;  align-items: center; justify-content: flex-start; position: absolute; z-index: 20; margin: 10px; color: black; font-family:Arial, Helvetica, sans-serif;">
-        <div style="display: flex; align-items: center; border: 1px solid #888; justify-content: flex-end;  background-color: white; padding: 10px; gap: 10px; border-radius: 20px; margin: 10px;">
-            <img src="./icon.png" alt="Logo" width="20" height="20" class="d-inline-block align-text-top"> Powered by Regen Farmer        
+      <div class="cards">
+        <a href="./maplibre.html" class="card">
+          <div class="card-icon">🗺️</div>
+          <h2>MapLibre GL JS</h2>
+          <p>
+            High-performance WebGL-based maps with smooth vector tile rendering,
+            globe projection, and rich interactivity.
+          </p>
+        </a>
+
+        <a href="./openlayers.html" class="card">
+          <div class="card-icon">🌍</div>
+          <h2>OpenLayers</h2>
+          <p>
+            Full-featured, battle-tested mapping library with extensive format support
+            and powerful vector tile capabilities.
+          </p>
+        </a>
+
+        <a href="./leaflet.html" class="card">
+          <div class="card-icon">🍃</div>
+          <h2>Leaflet</h2>
+          <p>
+            Lightweight and mobile-friendly mapping with the popular
+            leaflet-maplibre-gl plugin for vector tile support.
+          </p>
+        </a>
+      </div>
+
+      <div class="info-section">
+        <h3>About the Data</h3>
+        <p>
+          This showcase demonstrates access to the Regen Farmer LPIS (Land Parcel Identification System)
+          API, which provides agricultural field boundaries from multiple European countries as vector tiles.
+        </p>
+        <p>Available datasets:</p>
+        <div class="countries">
+          <span class="country">🇦🇹 Austria</span>
+          <span class="country">🇧🇪 Belgium</span>
+          <span class="country">🇨🇿 Czechia</span>
+          <span class="country">🇩🇰 Denmark</span>
+          <span class="country">🇫🇮 Finland</span>
+          <span class="country">🇫🇷 France</span>
+          <span class="country">🇩🇪 Germany</span>
+          <span class="country">🇮🇪 Ireland</span>
+          <span class="country">🇳🇱 Netherlands</span>
+          <span class="country">🇵🇹 Portugal</span>
         </div>
       </div>
-    </a>    
 
-    <div id="map"></div>
-
-    <script type="module">
-
-
-      const data = await fetch('https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json')
-        .then(response => response.json());
-
-        data.projection = {'type': 'globe'}
-
-        console.log(data)
-        
-      
-      const map = new maplibregl.Map({
-        hash: true,
-
-        container: "map",
-        style: data,
-        center: [7.82, 48.43],
-        zoom: 3.56,
-      });
-
-      const geocoderApi = {
-        forwardGeocode: async (config) => {
-            const features = [];
-            try {
-                const request =
-            `https://nominatim.openstreetmap.org/search?q=${
-                config.query
-            }&format=geojson&polygon_geojson=1&addressdetails=1`;
-                const response = await fetch(request);
-                const geojson = await response.json();
-                for (const feature of geojson.features) {
-                    const center = [
-                        feature.bbox[0] +
-                    (feature.bbox[2] - feature.bbox[0]) / 2,
-                        feature.bbox[1] +
-                    (feature.bbox[3] - feature.bbox[1]) / 2
-                    ];
-                    const point = {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: center
-                        },
-                        place_name: feature.properties.display_name,
-                        properties: feature.properties,
-                        text: feature.properties.display_name,
-                        place_type: ['place'],
-                        center
-                    };
-                    features.push(point);
-                }
-            } catch (e) {
-                console.error(`Failed to forwardGeocode with error: ${e}`);
-            }
-
-            return {
-                features
-            };
-        }
-    };
-    map.addControl(
-        new MaplibreGeocoder(geocoderApi, {
-            maplibregl,
-            marker: false
-        })
-    );
-
-      map.on("load", () => {
-        let tilesets = [
-          "AT_INSPIRE_FELDSTUECKE_2019_POLYGON",
-          "DK_Marker_2023",
-          "FI_AgriculturalParcel_2023",
-          "FR_PARCELLES_GRAPHIQUES_2022",
-          "NL_brpgewaspercelen_definitief_2022",
-          "CZ_2024_DPB",
-          "DE_Brandenburg_2025",
-          "DE_Niedersachen_2024",
-          "IE_Parcels_2023",
-          "PT_Solo_2022",
-          "BE_Vlaanderen_2022"
-        ];
-
-        for (const tileset of tilesets) {
-          map.addSource(`${tileset}_source`, {
-            type: "vector",
-            url: `https://maps.regenfarmer.com/api/tilesets/${tileset}`,
-          });
-
-          map.addLayer(
-            {
-              id: `${tileset}_fieldfill`,
-              type: "fill",
-              source: `${tileset}_source`,
-              "source-layer": "fields",
-              paint: {
-                "fill-color": "rgba(127,34,192,0.6)",
-              },
-            },
-            "waterway_label"
-          );
-
-          map.addLayer(
-            {
-              id: `${tileset}_fieldline`,
-              type: "line",
-              source: `${tileset}_source`,
-              "source-layer": "fields",
-              paint: {
-                "line-color": "black",
-                "line-width": 1,
-              },
-            },
-            "waterway_label"
-          );
-
-          // Create a popup, but don't add it to the map yet.
-          const popup = new maplibregl.Popup({
-            closeButton: false,
-            closeOnClick: false,
-          });
-
-          map.on("mousemove", `${tileset}_fieldfill`, (e) => {
-            // Change the cursor style as a UI indicator.
-            map.getCanvas().style.cursor = "help";
-
-            var coordinates = e.lngLat;
-
-            let tooltipHTML = "";
-            for (const [key, value] of Object.entries(
-              e.features[0].properties
-            )) {
-              tooltipHTML += `${key}: ${value}<br/>`;
-            }
-
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-            }
-
-            // Populate the popup and set its coordinates
-            // based on the feature found.
-            popup.setLngLat(coordinates).setHTML(tooltipHTML).addTo(map);
-          });
-
-          map.on("mouseleave", `${tileset}_fieldfill`, () => {
-            map.getCanvas().style.cursor = "";
-            popup.remove();
-          });
-        }
-      });
-    </script>
+      <footer>
+        <p>Powered by <a href="https://regenfarmer.com">Regen Farmer</a></p>
+      </footer>
+    </div>
   </body>
 </html>

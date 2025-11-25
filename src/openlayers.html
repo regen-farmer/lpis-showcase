@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>OpenLayers - RegenMaps</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css" />
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
+    <script src="https://unpkg.com/ol-mapbox-style@12.3.5/dist/olms.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #201c2b;
+      }
+      html,
+      body,
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+      .nav-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 20;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .brand-inner {
+        display: flex;
+        align-items: center;
+        border: 1px solid #888;
+        background-color: white;
+        padding: 10px;
+        gap: 10px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        text-decoration: none;
+        color: black;
+      }
+      .brand-inner:hover {
+        background: #f0f0f0;
+      }
+      .back-link {
+        display: flex;
+        align-items: center;
+        background: white;
+        padding: 10px;
+        border-radius: 20px;
+        text-decoration: none;
+        color: #333;
+        font-size: 14px;
+        border: 1px solid #888;
+        gap: 8px;
+      }
+      .back-link:hover {
+        background: #f0f0f0;
+      }
+      #tooltip {
+        position: absolute;
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        pointer-events: none;
+        z-index: 100;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        max-width: 300px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nav-container">
+      <a href="https://regenfarmer.com" class="brand-inner">
+        <img src="./icon.png" alt="Logo" width="20" height="20"> Powered by Regen Farmer
+      </a>
+      <a href="./" class="back-link">
+        ← Back to Examples
+      </a>
+    </div>
+
+    <div id="map"></div>
+    <div id="tooltip"></div>
+
+    <script type="module">
+      const tilesets = [
+        "AT_INSPIRE_FELDSTUECKE_2019_POLYGON",
+        "DK_Marker_2023",
+        "FI_AgriculturalParcel_2023",
+        "FR_PARCELLES_GRAPHIQUES_2022",
+        "NL_brpgewaspercelen_definitief_2022",
+        "CZ_2024_DPB",
+        "DE_Brandenburg_2025",
+        "DE_Niedersachen_2024",
+        "IE_Parcels_2023",
+        "PT_Solo_2022",
+        "BE_Vlaanderen_2022"
+      ];
+
+      // Create the map with CARTO basemap
+      const map = new ol.Map({
+        target: 'map',
+        controls: ol.control.defaults.defaults().extend([]),
+        view: new ol.View({
+          center: ol.proj.fromLonLat([7.82, 48.43]),
+          zoom: 4
+        })
+      });
+
+      // Move zoom control to top-right
+      document.querySelector('.ol-zoom').style.right = '8px';
+      document.querySelector('.ol-zoom').style.left = 'auto';
+
+      // Style function for LPIS layers
+      const lpisStyle = new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(127, 34, 192, 0.6)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'black',
+          width: 1
+        })
+      });
+
+      // Add CARTO basemap using olms, then add LPIS layers on top
+      olms.apply(map, 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json').then(async () => {
+        // Add LPIS vector tile layers after basemap is loaded
+        for (const tileset of tilesets) {
+          // Fetch TileJSON to get the correct tile URL
+          const tileJson = await fetch(`https://maps.regenfarmer.com/api/tilesets/${tileset}`).then(r => r.json());
+
+          const vtLayer = new ol.layer.VectorTile({
+            declutter: false,
+            source: new ol.source.VectorTile({
+              format: new ol.format.MVT(),
+              url: tileJson.tiles[0]
+            }),
+            style: lpisStyle
+          });
+          map.addLayer(vtLayer);
+        }
+      });
+
+      // Tooltip handling
+      const tooltip = document.getElementById('tooltip');
+
+      map.on('pointermove', (evt) => {
+        if (evt.dragging) {
+          tooltip.style.display = 'none';
+          return;
+        }
+
+        const pixel = map.getEventPixel(evt.originalEvent);
+        const features = map.getFeaturesAtPixel(pixel);
+
+        if (features && features.length > 0) {
+          const feature = features[0];
+          const properties = feature.getProperties();
+
+          let html = '';
+          for (const [key, value] of Object.entries(properties)) {
+            if (key !== 'geometry' && key !== 'layer') {
+              html += `<strong>${key}:</strong> ${value}<br/>`;
+            }
+          }
+
+          if (html) {
+            tooltip.innerHTML = html;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (evt.originalEvent.pageX + 10) + 'px';
+            tooltip.style.top = (evt.originalEvent.pageY + 10) + 'px';
+            map.getTargetElement().style.cursor = 'help';
+          }
+        } else {
+          tooltip.style.display = 'none';
+          map.getTargetElement().style.cursor = '';
+        }
+      });
+
+      map.on('movestart', () => {
+        tooltip.style.display = 'none';
+      });
+    </script>
+  </body>
+</html>
