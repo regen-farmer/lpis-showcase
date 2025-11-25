@@ -80,14 +80,33 @@
         color: #a0a0a0;
         line-height: 1.6;
       }
-      .card .tech {
+      .card-links {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .card-links a {
         display: inline-block;
-        background: rgba(127, 34, 192, 0.3);
-        padding: 4px 12px;
+        padding: 8px 16px;
         border-radius: 20px;
         font-size: 0.85rem;
-        margin-top: 15px;
-        color: #c084fc;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+      .card-links .demo {
+        background: rgba(127, 34, 192, 0.5);
+        color: #fff;
+      }
+      .card-links .demo:hover {
+        background: rgba(127, 34, 192, 0.7);
+      }
+      .card-links .source {
+        background: rgba(255, 255, 255, 0.1);
+        color: #a0a0a0;
+      }
+      .card-links .source:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
       }
       .info-section {
         background: rgba(255, 255, 255, 0.03);
